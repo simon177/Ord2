@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline';img-src *; style-src * 'self' 'unsafe-inline'; media-src *" />
+    <script src="cordova.js"></script>
+    <link rel="stylesheet" href="css/jquery.mobile-1.4.5.min.css" />
+    <script src="js/jquery-2.1.4.min.js"></script>
+    <script src="js/jquery.mobile-1.4.5.min.js"></script>
+    <script src="js/pgb.js"></script>
+</head>
+
+<body onload="init()">
+    <div data-role="page" id="pageone">
+        <div data-role="header">
+            <h1>Positioning Icons</h1>
+        </div>
+        <form method="post" action="/action_page_post.php">
+            <p>Fill in all fields on the form:</p>
+            <label for="fto">League</label>
+            <input type="text" name="fto" id="fto" data-clear-btn="true">
+            <label for="fdate">Date: </label>
+            <input type="date-time" name="fdate" id="fdate" data-clear-btn="true">
+            <a href="#interesetpage" class="ui-btn ui-btn-inline ui-corner-all ui-shadow" id="inter">Interests</a>
+        </form>
+        <div data-role="footer">
+            <h1>Footer Text</h1>
+        </div>
+    </div>
+    <div data-role="page" id="interesetpage">
+        <div data-role="header">
+            <a href="#pageone" data-icon="back" style="height: 40%;"></a>
+            <h1>Business Card</h1>
+        </div>
+        <div data-role="main" class="ui-content" id="result">
+        </div>
+        <div data-role="footer" data-position="fixed">
+            <h1>Szymon Banowski</h1>
+        </div>
+    </div>
+	<div data-role="page" id="matchpage">
+        <div data-role="header">
+            <a href="#pageone" data-icon="back" style="height: 40%;"></a>
+            <h1>Business Card</h1>
+        </div>
+        <div data-role="main" class="ui-content" id="matchDetails">
+        </div>
+        <div data-role="footer" data-position="fixed">
+            <h1>Szymon Banowski</h1>
+        </div>
+    </div>
+	<div data-role="page" id="standingsPage" data-dialog="true">
+			<div data-role="header" data-theme="a">
+				<h1>Standings</h1>
+			</div>
+			<div role="main" class="ui-content" id="standingsResult">
+			</div>
+		</div>
+	<div data-role="page" id="oddsPage" data-dialog="true">
+			<div data-role="header" data-theme="a">
+				<h1>Odds</h1>
+			</div>
+			<div role="main" class="ui-content" id="oddsResult">
+			</div>
+		</div>
+</body>
+<script>
+$("#inter").on('click', function(){
+    var urlAPI = 'http://wizard.uek.krakow.pl/~s179683/Web/order2/www/data.php';
+    var date = $('#fdate').val();
+    var league = $('#fto').val();
+	var link = 'https://apifootball.com/api/?action=get_events&from='+date+'&to='+date+'&league_id='+league;
+        $.ajax({
+	url: urlAPI,
+        type: 'POST',
+        data: {
+            'link': link,
+        },
+		//zamiana odpowiedzi json na string
+        success: function (result) {
+			var returnedData = JSON.parse(result);
+			var formatedData = JSON.parse(returnedData);
+			var html = '';
+			if(formatedData.error == 404){
+			html='brak wydarzen w danym dniu';
+			$('#result').html(html);
+			}
+			else{
+			$.each(formatedData, function(key, value){
+			html += '<a href="#matchpage">';
+			html += '<div data-date='+date+' data-league='+league+' class="result__item "'+'id='+value.match_id+'>';
+            html += '<label>'+value.match_hometeam_name+'-'+value.match_awayteam_name+'</label>';
+            html += '</div>';
+			html += '</a>';
+        });
+			}
+			$('#result').html(html);
+        }
+    });
+});
+</script>
+<script>
+$('body').on('click','.result__item',function(){
+var urlAPI = 'http://wizard.uek.krakow.pl/~s179683/Web/order2/www/data.php';
+var elemID = $(this).attr('id');
+var elemDate = $(this).attr('data-date');
+var elemLeague = $(this).attr('data-league');
+var link = 'https://apifootball.com/api/?action=get_events&from='+elemDate+'&to='+elemDate+'&league_id='+elemLeague+'&match_id='+elemID;
+       $.ajax({
+		url: urlAPI,
+        type: 'POST',
+        data: {
+            'link': link,
+        },
+		//zamiana odpowiedzi json na string
+        success: function (result) {
+			var returnedData = JSON.parse(result);
+			var formatedData = JSON.parse(returnedData);
+			var html = '';
+			html += '<div class="new_result">';
+            html += '<label>'+formatedData[0].match_hometeam_name+'-'+formatedData[0].match_awayteam_name+'</label>';
+            html += '</div>';
+			html += '<a href="#standingsPage" class="standings" id='+elemLeague+'>Standings</a>';
+			html += '<a href="#oddsPage" class="bets" data-date='+elemDate+' id='+elemLeague+'>Odds</a>';
+
+			$('#matchDetails').html(html);
+        }
+    });
+});
+</script>
+<script>
+$('body').on('click','.standings',function(){
+    var urlAPI = 'http://wizard.uek.krakow.pl/~s179683/Web/order2/www/data.php';
+    var elemLeague = $(this).attr('id');
+	var link = 'https://apifootball.com/api/?action=get_standings&league_id='+elemLeague;
+        $.ajax({
+	url: urlAPI,
+        type: 'POST',
+        data: {
+            'link': link,
+        },
+		//zamiana odpowiedzi json na string
+        success: function (result) {
+			var returnedData = JSON.parse(result);
+			var formatedData = JSON.parse(returnedData);
+			formatedData.sort(function(a, b) {
+			return parseFloat(a.overall_league_position) - parseFloat(b.overall_league_position);
+			});
+			var html = '';
+			$.each(formatedData, function(key, value){
+			html += '<div>';
+            html += '<p>'+value.overall_league_position+'.'+value.team_name+'</p>';
+            html += '</div>';
+        });
+			$('#standingsResult').html(html);
+        }
+    });
+});
+</script>
+</html>
