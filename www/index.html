@@ -69,7 +69,7 @@ $("#inter").on('click', function(){
     var urlAPI = 'data.php';
     var date = $('#fdate').val();
     var league = $('#fto').val();
-	var link = 'https://apifootball.com/api/?action=get_events&from='+date+'&to='+date+'&league_id='+league;
+	var link = 'https://apifootball.com/api/?action=get_events&from='+date+'&to='+date+'&league_id='+league+'&match_live=1';
         $.ajax({
 	url: urlAPI,
         type: 'POST',
@@ -81,17 +81,34 @@ $("#inter").on('click', function(){
 			var returnedData = JSON.parse(result);
 			var formatedData = JSON.parse(returnedData);
 			var html = '';
+			console.log(formatedData);
 			if(formatedData.error == 404){
-			html='brak wydarzen w danym dniu';
+			html='This league is not playing on that day';
 			$('#result').html(html);
 			}
 			else{
 			$.each(formatedData, function(key, value){
+			if(value.match_status == ''){
 			html += '<a href="#matchpage">';
-			html += '<div data-date='+date+' data-league='+league+' class="result__item "'+'id='+value.match_id+'>';
-            html += '<label>'+value.match_hometeam_name+'-'+value.match_awayteam_name+'</label>';
+			html += '<div data-date='+date+' data-league='+value.league_id+' class="result__item"'+'match_id='+value.match_id+'>';
+            html += '<label>'+value.match_time+' '+value.match_hometeam_name+' '+value.match_awayteam_name+'</label>';
             html += '</div>';
-			html += '</a>';
+			html += '</a>';	
+			}
+			if(value.match_status == 'FT'){
+			html += '<a href="#matchpage">';
+			html += '<div data-date='+date+' data-league='+value.league_id+' class="result__item"'+'id='+value.match_id+'>';
+            html += '<label>Full Time '+value.match_hometeam_name+' '+value.match_hometeam_score+':'+value.match_awayteam_score+' '+value.match_awayteam_name+'</label>';
+            html += '</div>';
+			html += '</a>';	
+			}	
+			if(value.match_status != 'FT' && value.match_status != 'Canc.' && value.match_status !='' && value.match_status != 'Postp.'){
+			html += '<a href="#matchpage">';
+			html += '<div data-date='+date+' data-league='+value.league_id+' class="result__item"'+'id='+value.match_id+'>';
+            html += '<label>'+value.match_status+' '+value.match_hometeam_name+' '+value.match_hometeam_score+':'+value.match_awayteam_score+' '+value.match_awayteam_name+' LIVE!</label>';
+            html += '</div>';
+			html += '</a>';	
+			}
         });
 			}
 			$('#result').html(html);
@@ -105,7 +122,7 @@ var urlAPI = 'data.php';
 var elemID = $(this).attr('id');
 var elemDate = $(this).attr('data-date');
 var elemLeague = $(this).attr('data-league');
-var link = 'https://apifootball.com/api/?action=get_events&from='+elemDate+'&to='+elemDate+'&league_id='+elemLeague+'&match_id='+elemID;
+var link = 'https://apifootball.com/api/?action=get_events&from='+elemDate+'&to='+elemDate+'&match_id='+elemID+'&match_live=1';
        $.ajax({
 		url: urlAPI,
         type: 'POST',
@@ -122,9 +139,23 @@ var link = 'https://apifootball.com/api/?action=get_events&from='+elemDate+'&to=
             html += '</div>';
 			html += '<a href="#standingsPage" class="standings" id='+elemLeague+'>Standings</a>';
 			html += '<a href="#oddsPage" class="bets" data-date='+elemDate+' id='+elemID+'>Odds</a>';
-
+			console.log(formatedData[0].goalscorer);
+			//if(formatedData[0].match_status == "FT"){
+			//$.each(formatedData[0].goalscorer, function(key, value){
+			//html += '<div class="goalscorers">';
+            //html += '<label>'+value.time+' '+value.score+' '+value.home_scorer+''+value.away_scorer+'</label>';
+            //html += '</div>';
+			//});
+			//}
+			if(formatedData[0].match_status=="FT" ){
+			$.each(formatedData[0].goalscorer, function(key, value){
+			html += '<div class="goalscorers">';
+            html += '<label>'+value.time+' '+value.score+' '+value.home_scorer+''+value.away_scorer+'</label>';
+            html += '</div>';
+		});
+		}
 			$('#matchDetails').html(html);
-        }
+       } 
     });
 });
 </script>
