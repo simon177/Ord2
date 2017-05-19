@@ -180,7 +180,7 @@ $('body').on('click','.standings',function(){
 			var html = '';
 			$.each(formatedData, function(key, value){
 			html += '<div>';
-            html += '<p>'+value.overall_league_position+'.'+value.team_name+'</p>';
+            html += '<p>'+value.overall_league_position+' '+value.team_name+' '+value.overall_league_payed+' '+value.overall_league_W+' '+value.overall_league_D+' '+value.overall_league_L+' '+value.overall_league_GF+' '+value.overall_league_GA+' '+value.overall_league_PTS+'</p>';
             html += '</div>';
         });
 			$('#standingsResult').html(html);
