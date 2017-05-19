@@ -66,7 +66,7 @@
 </body>
 <script>
 $("#inter").on('click', function(){
-    var urlAPI = 'http://wizard.uek.krakow.pl/~s179683/Web/order2/www/data.php';
+    var urlAPI = 'data.php';
     var date = $('#fdate').val();
     var league = $('#fto').val();
 	var link = 'https://apifootball.com/api/?action=get_events&from='+date+'&to='+date+'&league_id='+league;
@@ -101,7 +101,7 @@ $("#inter").on('click', function(){
 </script>
 <script>
 $('body').on('click','.result__item',function(){
-var urlAPI = 'http://wizard.uek.krakow.pl/~s179683/Web/order2/www/data.php';
+var urlAPI = 'data.php';
 var elemID = $(this).attr('id');
 var elemDate = $(this).attr('data-date');
 var elemLeague = $(this).attr('data-league');
@@ -121,7 +121,7 @@ var link = 'https://apifootball.com/api/?action=get_events&from='+elemDate+'&to=
             html += '<label>'+formatedData[0].match_hometeam_name+'-'+formatedData[0].match_awayteam_name+'</label>';
             html += '</div>';
 			html += '<a href="#standingsPage" class="standings" id='+elemLeague+'>Standings</a>';
-			html += '<a href="#oddsPage" class="bets" data-date='+elemDate+' id='+elemLeague+'>Odds</a>';
+			html += '<a href="#oddsPage" class="bets" data-date='+elemDate+' id='+elemID+'>Odds</a>';
 
 			$('#matchDetails').html(html);
         }
@@ -130,7 +130,7 @@ var link = 'https://apifootball.com/api/?action=get_events&from='+elemDate+'&to=
 </script>
 <script>
 $('body').on('click','.standings',function(){
-    var urlAPI = 'http://wizard.uek.krakow.pl/~s179683/Web/order2/www/data.php';
+    var urlAPI = 'data.php';
     var elemLeague = $(this).attr('id');
 	var link = 'https://apifootball.com/api/?action=get_standings&league_id='+elemLeague;
         $.ajax({
@@ -153,6 +153,33 @@ $('body').on('click','.standings',function(){
             html += '</div>';
         });
 			$('#standingsResult').html(html);
+        }
+    });
+});
+</script>
+<script>
+$('body').on('click','.bets',function(){
+    var urlAPI = 'data2.php';
+	var elemID = $(this).attr('id');
+    var elemDate = $(this).attr('data-date');
+	var link = 'https://apifootball.com/api/?action=get_odds&from='+elemDate+'&to='+elemDate+'match_id='+elemID;
+        $.ajax({
+	url: urlAPI,
+        type: 'POST',
+        data: {
+            'link': link,
+        },
+		//zamiana odpowiedzi json na string
+        success: function (result) {
+			console.log(result);
+			var returnedData = JSON.parse(result);
+			var html = '';
+			$.each(returnedData, function(key, value){
+			html += '<div>';
+            html += '<p>'+value.odd_bookmakers+'  '+value.odd_1+'  '+value.odd_x+'  '+value.odd_2+'</p>';
+            html += '</div>';
+        });
+			$('#oddsResult').html(html);
         }
     });
 });
