@@ -264,7 +264,7 @@ $('body').on('click','#reminder',function(){
 	var calOptions = window.plugins.calendar.getCalendarOptions();
 	calOptions.firstReminderMinutes = 10;
 	calOptions.secondReminderMinutes = 5;
-	window.plugins.calendar.createEvent(title,eventLocation,notes,startDate,endDate,success,error);
+	window.plugins.calendar.window.plugins.createEventInteractively(title,eventLocation,notes,startDate,endDate,success,error);
 
 });
 </script>
