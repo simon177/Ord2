@@ -262,9 +262,7 @@ $('body').on('click','#reminder',function(){
 		var success = function(message) { alert("Success: " + JSON.stringify(message)); };
 		var error = function(message) { alert("Error: " + message); };
 	var calOptions = window.plugins.calendar.getCalendarOptions();
-	calOptions.firstReminderMinutes = 10;
-	calOptions.secondReminderMinutes = 5;
-	window.plugins.calendar.window.plugins(title,eventLocation,notes,startDate,endDate,success,error);
+	 window.plugins.calendar.createEvent(title,eventLocation,notes,startDate,endDate,success,error);
 
 });
 </script>
