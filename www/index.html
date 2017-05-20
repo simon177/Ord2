@@ -63,6 +63,18 @@
 			<div role="main" class="ui-content" id="oddsResult">
 			</div>
 		</div>
+	<div data-role="page" id="calpage">
+        <div data-role="header">
+            <a href="#pageone" data-icon="back" style="height: 40%;"></a>
+            <h1>Business Card</h1>
+        </div>
+        <div data-role="main" class="ui-content" id="caldet">
+        </div>
+        <div data-role="footer" data-position="fixed">
+            <h1>Szymon Banowski</h1>
+        </div>
+    </div>
+	
 </body>
 <script>
 $("#inter").on('click', function(){
@@ -131,7 +143,6 @@ var link = 'https://apifootball.com/api/?action=get_events&from='+elemDate+'&to=
         },
 		//zamiana odpowiedzi json na string
         success: function (result) {
-			console.log(result);
 			var returnedData = JSON.parse(result);
 			var formatedData = JSON.parse(returnedData);
 			var html = '';
@@ -140,7 +151,7 @@ var link = 'https://apifootball.com/api/?action=get_events&from='+elemDate+'&to=
 			html += '<label>'+formatedData[0].match_date+' '+formatedData[0].match_time+'</label>';
 			if(formatedData[0].match_status == ""){
 			html += '<label>'+formatedData[0].match_hometeam_name+' - '+formatedData[0].match_awayteam_name+'</label>';
-			html += '<a href="#rem" class="rem">Remind Me!</a>';
+			html += '<button data-home='+formatedData[0].match_hometeam_name.replace(/ /g,"_")+' data-away='+formatedData[0].match_awayteam_name.replace(/ /g,"_")+' data-date='+formatedData[0].match_date+' data-time='+formatedData[0].match_time+' id="reminder">Remind Me!</button>';
 			}
 			else if(formatedData[0].match_status == 'FT'){
 			html += '<label>'+formatedData[0].match_hometeam_name+' - '+formatedData[0].match_awayteam_name+' '+formatedData[0].match_hometeam_score+':'+formatedData[0].match_awayteam_score+'</label>';
@@ -149,7 +160,7 @@ var link = 'https://apifootball.com/api/?action=get_events&from='+elemDate+'&to=
 			html += '<label>'+formatedData[0].match_status+' '+formatedData[0].match_hometeam_name+' - '+formatedData[0].match_awayteam_name+' '+formatedData[0].match_hometeam_score+':'+formatedData[0].match_awayteam_score+' LIVE!</label>';
 			}
 			html += '</div>';
-			html += '<a href="#standingsPage" class="standings" id='+elemLeague+'>Standings</a>';
+			html += '<a href="#standingsPage" class="standings" data-home='+formatedData[0].match_hometeam_name.replace(/ /g,"_")+' data-away='+formatedData[0].match_awayteam_name.replace(/ /g,"_")+' id='+elemLeague+'>Standings</a>';
 			html += '<a href="#oddsPage" class="bets" data-date='+elemDate+' id='+elemID+'>Odds</a>';
 			$.each(formatedData[0].goalscorer, function(key, value){
 			html += '<div class="goalscorers">';
@@ -173,6 +184,9 @@ var link = 'https://apifootball.com/api/?action=get_events&from='+elemDate+'&to=
 $('body').on('click','.standings',function(){
     var urlAPI = 'http://wizard.uek.krakow.pl/~s179683/Web/order2/www/data.php';
     var elemLeague = $(this).attr('id');
+	var home = $(this).attr('data-home');
+	var away = $(this).attr('data-away');
+
 	var link = 'https://apifootball.com/api/?action=get_standings&league_id='+elemLeague;
         $.ajax({
 	url: urlAPI,
@@ -190,8 +204,13 @@ $('body').on('click','.standings',function(){
 			var html = '';
 			$.each(formatedData, function(key, value){
 			html += '<div>';
-            html += '<p>'+value.overall_league_position+' '+value.team_name+' '+value.overall_league_payed+' '+value.overall_league_W+' '+value.overall_league_D+' '+value.overall_league_L+' '+value.overall_league_GF+' '+value.overall_league_GA+' '+value.overall_league_PTS+'</p>';
-            html += '</div>';
+			if(value.team_name.replace(/ /g,"_") == home || value.team_name.replace(/ /g,"_") == away){
+            html += '<p style="color:blue;">'+value.overall_league_position+' '+value.team_name+' '+value.overall_league_payed+' '+value.overall_league_W+' '+value.overall_league_D+' '+value.overall_league_L+' '+value.overall_league_GF+' '+value.overall_league_GA+' '+value.overall_league_PTS+'</p>';
+			}
+			else{
+			html += '<p>'+value.overall_league_position+' '+value.team_name+' '+value.overall_league_payed+' '+value.overall_league_W+' '+value.overall_league_D+' '+value.overall_league_L+' '+value.overall_league_GF+' '+value.overall_league_GA+' '+value.overall_league_PTS+'</p>';
+			}
+			html += '</div>';
         });
 			$('#standingsResult').html(html);
         }
@@ -203,8 +222,7 @@ $('body').on('click','.bets',function(){
     var urlAPI = 'http://wizard.uek.krakow.pl/~s179683/Web/order2/www/data2.php';
 	var elemID = $(this).attr('id');
     var elemDate = $(this).attr('data-date');
-	var link = 'https://apifootball.com/api/?action=get_odds&from='+elemDate+'&to='+elemDate+'&match_id='+elemID;
-    console.log(link);    
+	var link = 'https://apifootball.com/api/?action=get_odds&from='+elemDate+'&to='+elemDate+'&match_id='+elemID; 
 		$.ajax({
 	url: urlAPI,
         type: 'POST',
@@ -213,7 +231,6 @@ $('body').on('click','.bets',function(){
         },
 		//zamiana odpowiedzi json na string
         success: function (result) {
-			console.log(result);
 			var returnedData = JSON.parse(result);
 			var html = '';
 			$.each(returnedData, function(key, value){
@@ -224,6 +241,31 @@ $('body').on('click','.bets',function(){
 			$('#oddsResult').html(html);
         }
     });
+});
+</script>
+<script>
+$('body').on('click','#reminder',function(){
+	//var home = $(this).attr('data-home').replace(/_/g," ");
+	//var away= $(this).attr('data-away').replace(/_/g," ");
+	//var dateD = $(this).attr('data-date');
+    //var timeD = $(this).attr('data-time');
+	//var year = dateD.substring(0,4);
+	//var month = dateD.substring(5,7);
+	//var day = dateD.substring(8,10);
+	//var hour = timeD.substring(0,2);
+	//var minutes = timeD.substring(3,5);
+	  var startDate = new Date(2015,2,15,18,30,0,0,0); // beware: month 0 = january, 11 = december
+	  var endDate = new Date(2015,2,15,19,30,0,0,0);
+		var title = "My nice event";
+		var eventLocation = "Home";
+		var notes = "Some notes about this event.";
+		var success = function(message) { alert("Success: " + JSON.stringify(message)); };
+		var error = function(message) { alert("Error: " + message); };
+	var calOptions = window.plugins.calendar.getCalendarOptions();
+	calOptions.firstReminderMinutes = 10;
+	calOptions.secondReminderMinutes = 5;
+	window.plugins.calendar.createEvent(title,eventLocation,notes,startDate,endDate,success,error);
+
 });
 </script>
 </html>
